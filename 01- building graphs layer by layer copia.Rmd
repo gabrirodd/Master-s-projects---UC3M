@@ -7,7 +7,7 @@ mpg
 
 ggplot(mpg, 
        aes(displ, hwy)) +
-  geom_point()
+  geom_line()
 
 #also as (more readable)
 
