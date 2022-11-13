@@ -1,0 +1,404 @@
+
+
+```{r}
+# Titles ####
+library(ggplot2)
+mpg
+
+ggplot(mpg, 
+       aes(displ, hwy)) +
+  geom_point()
+
+#also as (more readable)
+
+ggplot(mpg) +
+  aes(displ, hwy) +
+  geom_point()
+
+#We can also avoid setting a default dataset and mapping altogether, and just directly plug them into the layers that need them (not recommended)
+
+ggplot() +
+  geom_point(aes(displ, hwy), mpg)
+
+
+#Add lines:
+ggplot(mpg) +
+  aes(displ, hwy) +
+  geom_point() +
+  geom_line()
+
+
+```
+
+```{r}
+#2.2.1 Exercises
+
+#Exercise 1. 
+#five functions that you could use to get more information about the mpg dataset.
+
+head(mpg)
+tail(mpg)
+is.na(mpg) 
+unique(mpg$model) 
+str(mpg)
+
+#Exercise 2. How can you find out what other datasets are included with ggplot2?
+
+data(package="ggplot2")
+  
+#Exercise 3. Apart from the US, most countries use fuel consumption (fuel consumed over fixed distance) rather than fuel economy (distance travelled with fixed amount of fuel). How could you convert cty and hwy into the European standard of l/100km?
+
+# 1 mile = 1,60934 km
+# 1 galon = 3,78541 liters
+  
+mpg %>% 
+  transmute(
+    cty = cty*1,60934/3,78541,
+    hwy = hwy*1,60934/3,78541
+  )
+  
+mpg |>
+  dplyr:mutate(cty=)
+
+#4
+mpg |>
+  dplyr::select(manufacturer, model) |>
+  dplyr::distinct() |>
+  dplyr::count(manufacturer) |>
+  dplyr::arrange(n)
+  
+```
+
+```{r}
+#CHECKPOINT 2
+
+# 1. How would you describe the relationship between cty and hwy? Do you have any concerns about drawing conclusions from that plot?
+  
+ggplot(mpg) +
+  aes(cty, hwy) +
+  geom_point()
+
+#Class:Values are not continuous but integers, in linear relationsship variables are continuous. 
+
+#Both values are correlated as obviously the more miles per galon a vehicle can travel it will affect both the city and the highway road. As we can see vehicles waste more galons per mile in cities.
+
+
+# 2. What does ggplot(mpg, aes(model, manufacturer)) + geom_point() show? Is it useful? How could you modify the data to make it more informative?
+
+#Class: Same manufacturer has different model.
+#It shows each brand and the model of car. It's not useful as it's the two variables don't interact, each brand has it's own models. Also we cannot know how many of each model we have
+
+#We can make it more informative by representing how efficient is each model
+
+ggplot(mpg, aes(model,cty))+
+  geom_point()
+
+#We can also show how many models each manufacturer has.
+
+n_models <- mpg %>% 
+  dplyr::select(manufacturer, model) %>% 
+  dplyr::distinct() %>% ##Taking out the rows that are the same
+  dplyr::count(manufacturer) %>% 
+  dplyr::arrange(n)
+
+ggplot(n_models, aes(manufacturer, n)) +
+  geom_col () #We can plot it in the Y axes to see thenamesn_models <- mpg %>% 
+  dplyr::select(manufacturer, model) %>% 
+  dplyr::distinct() %>% ##Taking out the rows that are the same
+  dplyr::count(manufacturer) %>% 
+  dplyr::arrange(n)
+
+ggplot(n_models, aes(manufacturer, n)) +
+  geom_point()
+  
+  ggplot(n_models, aes(n, forcats::fct_reorder(manufacturer, n))) +
+  geom_col() 
+
+#Describe the data, aesthetic mappings and layers used for each of the following plots. 
+
+ggplot(mpg, aes(cty, hwy)) + geom_point() 
+?mpg
+#Data: Fuel economy data from 1999 to 2008 for 38 popular models of cars
+#Aesthetics: cty is city miles per gallon and hwy is highway miles per gallon
+#Other layers: Geom_point is used to create scatterplots, useful for displaying the relationship between two continuous variables.
+
+ggplot(diamonds, aes(carat, price)) + geom_point()
+#Diamonds measures prices of over 50,000 round cut diamonds.
+#Aesthetics: carat is weights of the diamond and price is price in US dollars.
+
+ggplot(economics, aes(date, unemploy)) + geom_line()
+#Economics measures US economic time series
+
+ggplot(mpg, aes(cty)) + geom_histogram()
+?geom_histogram
+#geom_histogram: visualise the distribution of a single continuous variable by dividing the x axis int bins and counting the number of observation in each bin
+
+
+```
+
+#More aesthetics.
+#We can add additional variables to our plot.
+
+```{r}
+#Using color
+
+ggplot(mpg) +
+  aes(displ, hwy, color=class) +
+  geom_point()
+
+#Color for all the geom_paths in the graph
+
+ggplot(mpg) +
+  aes(displ, hwy, color=class) +
+  geom_line() +
+  geom_point()
+
+#Color only for one geom_path in the graph
+ggplot(mpg) +
+  aes(displ, hwy) +
+  geom_line(aes(color=class)) +
+  geom_point()
+
+#Concrete color
+
+ggplot(mpg) +
+  aes(displ, hwy) +
+  geom_point(color="blue")
+?mpg
+
+```
+
+```{r}
+
+#CHECKPOINT 3
+
+#1. Compare the following two plots and reason why you get this result:
+
+ggplot(mpg, aes(displ, hwy)) + 
+  geom_point(aes(colour = "blue"))
+#In this case we are creating a new variable called "blue" and adding any color to it.
+
+ggplot(mpg, aes(displ, hwy)) + 
+  geom_point(colour = "blue")
+#In this case we are adding colour blue to the points of our plot
+
+
+#2. Experiment with the color, shape and size aesthetics. What happens when you map them to continuous values? What about categorical values? What happens when you use more than one aesthetic in a plot?
+
+#When it's a continuous variable instead of hue values are represented by different light
+ggplot(mpg)+
+  aes(class,hwy,color=cty)+
+  geom_point()
+
+#It's not recommended to use size for example, the scale in the right doesnt represent everything
+ggplot(mpg)+
+  aes(class,hwy,size=cty)+
+  geom_point()
+
+#This is really bad, we even get a warning of the limit of shapes. If we use a continuous variable we get an error.
+ggplot(mpg)+
+  aes(class,hwy,shape=class)+
+  geom_point()
+
+
+#Use more than one aesthetic in a plot?
+#Only shows color=class when the geom_path is empty
+
+#not recommended
+ggplot(mpg) +
+  aes(displ, hwy) +
+  geom_point(aes(color=class, alpha=cty))
+
+ggplot(mpg) +
+  aes(displ, hwy) +
+  geom_point(aes(color=class, size=cty))
+ 
+  
+
+#3. What happens if you map a continuous variable to shape? Why? What happens if you map trans to shape? Why?
+#Shapes: 
+    #linetype: 0 - 6
+    #size: numbers indicates area
+    #shape: 0 - 25
+#error you cannot do that
+
+ggplot(mpg) +
+  aes(displ,hwy)+
+  geom_point(size=3,shape=11) +
+  geom_line(linetype= 3)
+
+#4. How is drive train related to fuel economy? 
+
+ggplot(mpg) +
+  aes(drv, hwy) +
+  geom_point()
+
+#How is drive train related to engine size and class?#Drive train related to fuel economy?
+
+ggplot(mpg, aes(x = reorder(drv, -cty), y = cty)) + 
+  geom_boxplot()
+
+#Drive train related to engine size ? #Drive train related to engine class?
+
+ggplot(mpg,aes(drv,class,color=cyl))+geom_point() #we have points in the top of each other.
+ggplot(mpg,aes(cyl,class,color=drv))+geom_point() # we still have many points on top of each other. The is not enough variability to show all the dateset.
+
+
+
+
+```
+```{r}
+
+#Faceting
+#Fundamental technique for mapping categorical variables. It is most useful e.g. as an alternative to color hue when there are too many categories an no way of further aggregating the data.
+#Important: it cannot be applied as an aes(), but directly into the dedicated faceting function, and as a formula, preceded by a ~.
+
+ggplot(mpg) +
+  aes(displ, hwy) +
+  facet_wrap(~class) +
+  geom_point(size=0.5) 
+  
+
+
+
+```
+```{r}
+
+#CHECKPOINT 4
+#1.What happens if you try to facet by a continuous variable like hwy? What about cyl? What’s the key difference?
+#hwy
+ggplot(mpg)+
+  aes(displ,cty)+
+  geom_point()+
+  facet_wrap(~hwy)
+#Facets are a great way to trade off between something like color when you have many variables or space. When we use a continous variable we have too many facets and we don't see anyting interesting.
+
+#cyl
+ggplot(mpg)+
+  aes(displ,cty)+
+  geom_point()+
+  facet_wrap(~cyl)
+
+#number of ciliders are only 4,5,6 and 8. Here it's used in the correct way. Instead of color this we split it in facets and it's more clear the pattern.
+
+
+#Use faceting to explore the 3-way relationship between fuel economy, engine size, and number of cylinders. How does faceting by number of cylinders change your assessment of the relationship between engine size and fuel economy?
+
+#what is fuel economy and engine size?
+ggplot(mpg) +
+  aes(displ, hwy, cyl) +
+  facet_wrap(~cyl) +
+  geom_point()
+
+
+#Read the documentation for facet_wrap(). What arguments can you use to control how many rows and columns appear in the output?
+
+?facet_wrap
+
+facet_wrop(nrow = 4, ncol = 4)
+
+#What does the scales argument to facet_wrap() do? When might you use it?
+
+# By default, the same scales are used for all panels. You can allow scales to vary across the panels with the `scales` argument.
+ggplot(mpg)+
+  aes(displ,fl)+
+  geom_point()+
+  facet_wrap(~cyl, scales= "free")
+
+## Free scales make it easier to see patterns within each panel, but harder to compare across panels.
+#We can state that fuel economy depend mostly on numbers of cylinders. For each of the bubbles the is no clear relation (each facet).
+
+  ggplot(mpg) +
+  aes(displ, hwy) +
+  facet_wrap(~cyl, ncol = 1, nrow = 4) +
+  geom_point()
+
+#Also as 
+  
+ggplot(mpg) +
+  aes(displ, hwy) +
+  facet_wrap(~cyl, nrow = 1) +
+  geom_point()
+
+#But it leaves to much space so, to put them side by side to compare other things:
+
+ggplot(mpg) +
+  aes(displ, hwy) +
+  facet_wrap(~cyl, nrow = 1, scales = "free_x") +
+  geom_point()
+
+
+```
+
+```{r}
+
+
+#Output
+
+#Save it in a variable.
+
+p <- ggplot(mpg) +
+  aes(displ, hwy) +
+  geom_point()
+
+p
+
+#We can do it using different variables
+
+p_base <- ggplot(mpg)
+p_aes <- aes(displ, hwy)
+p_dot <- geom_point()
+
+p_base + p_aes + p_dot
+
+
+#Save the graph somewhere else.
+
+ggsave("plot.png", p, width = 5, height = 5)
+
+
+#CHECKPOINT 5
+
+# 1. Read the documentation for ggsave(). What happens if you do not specify the plot argument?
+
+?ggsave()
+
+#By default it saves the last plot displayed
+
+# 2. How can you save the plot as a PDF file?
+
+ggsave("mtcars.pdf", width = 4, height = 4)
+
+# specify device when saving to a file with unknown extension
+# (for example a server supplied temporary file)
+file <- tempfile()
+ggsave(file, device = "pdf")
+unlink(file)
+
+# 3. How can you modify the proportions of the plot?
+
+#Changing the width and the height
+
+# 4. What happens if you change the resolution for a PNG output? And a SVG?
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
