@@ -1,0 +1,39 @@
+---
+title: "Github"
+output: html_document
+date: "2022-11-13"
+---
+
+```{r}
+install.packages("usethis")
+
+
+use_git_config(user.name = "gabrirodd", user.email = "gabrielrodriguezmolina@gmail.com")
+
+#Terminal: git config --global
+
+usethis::create_github_token()
+
+#token: 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
+
+
+gitcreds::gitcreds_set()
+
+# Add version control: tools --> Git/SVN
+#Commit in Git (top rihgt) --> Commit 
+#Commit a CSV: look for it in files, move it to the project and it will be shown in GIT.
+#The same for other R scripts
+#Inside Commit window we can also see the history of commits
+
+
+# How to link the repository to the command line, copy this when creating the repository, this is the Master's one. It worked for me using classic token.
+#git remote add origin https://github.com/gabrirodd/Master-s-projects---UC3M.git
+#git branch -M main
+#git push -u origin main
+
+print("hi")
+
+
+
+
+```
